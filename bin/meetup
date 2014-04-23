@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ~/collab/meetup${1}
+tmux new -A -s meetup${1}
