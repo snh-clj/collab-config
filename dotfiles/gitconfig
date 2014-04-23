@@ -1,0 +1,104 @@
+[alias]
+    # Common abbreviations
+    ci = commit -v
+    co = checkout
+    id = describe
+    st = status
+    sub = submodule
+
+    # Runs diff using vimdiff to compare versions
+    vimdiff = difftool -t vimdiff
+
+    # Check In All
+    cia = commit -v -a
+
+    # Returns relative path to repo root ("cd up" in absurd git vernacular)
+    root = rev-parse --show-cdup
+
+    # ReBase Upstream
+    rbu = rebase @{upstream}
+
+    # diff Cached
+    diffc = diff --cached
+
+    # log Full (format)
+    logf = log -p --stat
+
+
+    ## From abrooks
+
+    # fetch and show log of upstream commits
+    inbound = !bash -c "\"git fetch; git log -p --stat HEAD..@{upstream}\""
+
+    # Show list of contributors
+    contrib = !git log "--pretty=format:'%an %ae%n%cn %ce'" |sort |uniq -c |sort
+
+    # Log, One Line, All (refs) - shows the relationship of all refs in the repository
+    lola = log --graph --decorate --pretty=lol --all
+
+    # Log, One Line, outbound - shows the commits on HEAD not on upstream
+    lolo = log --graph --decorate --pretty=lol @{upstream}..HEAD
+
+    # Log, One Line, Upstream - shows the relationship of HEAD and upstream
+    lolu = log --graph --decorate --pretty=lol HEAD..@{upstream}
+
+    # Log, One Line "Y" format - compares HEAD vs upstream back to the merge point
+    loly = !git lol ^$(git merge-base HEAD @{upstream})^@ HEAD @{upstream}
+
+    # (Log, One Line) "Y" format - compares HEAD vs upstream back to the merge point
+    y = !git loly
+
+    ## From Nathan Ehresman
+    lolol = log --graph --pretty=lolol --all
+
+    ## From Scott Chacon
+    # Log, One Line
+    lol = log --oneline --graph --decorate
+    olo = log "--pretty=format:%s" --decorate
+
+[core]
+    pager = less -FXRS
+
+[pager]
+    # git doesn't make this easy for me. And less isn't helping either.
+    log = bash -c 'LESSHISTFILE=<(echo -e \".less-history-file:\n.search\n\\\"^(commit|diff).*\n\\\"^(commit).*\") less -FXRS'
+    diff = bash -c 'LESSHISTFILE=<(echo -e \".less-history-file:\n.search\n\\\"^(diff).*\") less -FXRS'
+
+[pretty]
+    lol = "%C(yellow bold)%h%C(reset) %C(red)(%an)%C(reset)%C(blue bold)%d%C(reset) %s %C(cyan)(%ar)%C(reset)"
+    lolol = "%C(yellow bold)%h%Creset by %C(red)%an%Creset (%ar)%C(cyan bold)%d%Creset%n%s%n%n%b"
+
+[notes]
+    displayRef = refs/notes/[t]ickets
+    displayRef = refs/notes/[t]esters
+
+[color]
+    ui = auto
+    status = auto
+    branch = auto
+    diff = auto
+    interactive = auto
+    pager = true
+
+[color "diff"]
+    plain = blue
+    meta = blue
+    frag = blue
+    old = red
+    new = green
+    commit = yellow bold
+    whitespace = "red reverse"
+
+[color "interactive"]
+    header = blue
+    prompt = white reverse
+    help = white bold
+    error = red bold
+
+[color "status"]
+    header = white
+    added = blue bold
+    updated = green bold
+    changed = magenta bold
+    untracked = yellow bold
+    nobranch = red bold
