@@ -203,7 +203,7 @@ Unix terminals.
      (define-key paredit-mode-map (kbd "C-c d") 'paredit-duplicate-after-point)))
 
 ;; Use our slime extensions
-;;(require 'pair-slime-extensions)
+(require 'slime-extensions)
 
 ;;(defun pair-slime-hook-function ()
 ;;  (local-set-key (kbd "C-c C-s") 'slime-send-dwim))

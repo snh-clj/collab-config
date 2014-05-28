@@ -104,15 +104,15 @@
   `(eval-after-load ,mode
      '(progn ,@body)))
 
-(defun cider-send-dwim ()
-  "Send the appropriate forms to the REPL to be evaluated."
-  (interactive)
-  (let ((expr (cider-last-sexp)))
-    (pop-to-buffer (cider-find-or-create-repl-buffer))
-    (goto-char (point-max))
-    (insert expr)
-    (cider-repl-return)
-    (other-window -1)))
+;; (defun cider-send-dwim ()
+;;   "Send the appropriate forms to the REPL to be evaluated."
+;;   (interactive)
+;;   (let ((expr (cider-last-sexp)))
+;;     (pop-to-buffer (cider-find-or-create-repl-buffer))
+;;     (goto-char (point-max))
+;;     (insert expr)
+;;     (cider-repl-return)
+;;     (other-window -1)))
 
 (after 'cider
   (define-key cider-mode-map (kbd "C-c C-c") 'cider-send-dwim))
