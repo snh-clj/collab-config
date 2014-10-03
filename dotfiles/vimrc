@@ -20,7 +20,7 @@ set showmatch           " briefly jump to matching bracket
 set nowarn              " don't warn for shell command when buffer changed
 set wildmode=longest,list,full
 
-" Statusline thanks to Ciaran
+" Statusline
 set laststatus=2        " always show a status line (with the current filename)
 set statusline=
 set statusline+=%-3.3n\                      " buffer number
@@ -29,13 +29,9 @@ set statusline+=%h%m%r%w                     " flags
 set statusline+=\[%{strlen(&ft)?&ft:'none'}, " filetype
 set statusline+=%{&encoding},                " encoding
 set statusline+=%{&fileformat}]              " file format
-if filereadable(expand("$VIM/vimfiles/plugin/vimbuddy.vim"))
-    set statusline+=\ %{VimBuddy()}          " vim buddy
-endif
 set statusline+=%=                           " right align
 set statusline+=0x%-8B\                      " current char
 set statusline+=%-14.(%l,%c%V%)\ %<%P        " offset
-
 
 " Tabs and Indents
 set autoindent
@@ -128,11 +124,6 @@ map ,t  :%!tidy -q --indent auto --output-xhtml yes<CR>
 map ,T  :%!tidy -q --indent auto -xml<CR>
 map ,ct :%!tidy -q --clean --indent auto -xml<CR>
 
-" fireplace.vim keybindings
-map <F1> :ConqueTerm lein repl
-map <F2> :ConqueTerm bash
-map <F12> :ConqueTermVSplit lein repl
-
 " command line editing, emacs style (See ":help <>")
 cnoremap <C-A> <Home>
 cnoremap <C-F> <Right>
@@ -145,67 +136,6 @@ cnoremap <ESC><C-H> <C-W>
 noremap ,dp :diffput<CR>
 noremap ,dg :diffget<CR>
 noremap ,du :diffupdate<CR>
-
-"==================================== C ====================================
-" Chouser's experimental errorformat for Tru64
-function! SetTru64Errorformat()
-  " clear the default because most of it is unnecessary
-  set errorformat=''
-
-  " now add back in the default (from 6.0w, anyway) for GNU Make
-  set errorformat+=%D%*\\a[%*\\d]:\ Entering\ directory\ `%f'
-  set errorformat+=%X%*\\a[%*\\d]:\ Leaving\ directory\ `%f'
-  set errorformat+=%DMaking\ %*\\a\ in\ %f
-
-  " add in chouser's hand-made Tru64 matches
-  " note that vim gets the column wrong when there are tabs in the source code
-  set errorformat+=%Wcc:\ Warning:\ %f\\,\ line\ %l:\ %m
-  set errorformat+=%Ecc:\ Error:\ %f\\,\ line\ %l:\ %m
-  set errorformat+=%Z%p^
-
-  " now match all other lines and throw them away
-  set errorformat+=%-G%*[^!]
-endfunction
-
-" Default options for C files
-function! LoadTypeC()
-  set formatoptions-=tc " don't wrap text or comments automatically
-  set cindent
-  set cinoptions=(0,u0,t0,l1
-  iab <buffer> #i #include
-  iab <buffer> #d #define
-
-  " CTX scope context for C files; emerge app-vim/ctx
-  set updatetime=500
-  let CTX_minrows=1
-  let CTX_maxrows=1
-
-  " Reformat long #defines
-  vnoremap ,c :'<,'>perldo s/(.*?) *\\*$/$1.(' 'x(79-length $1)).'\\'/e
-endfunction
-
-" Add support for various types of cscope searches based on the current word
-if (has("cscope"))
-  noremap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>f :cs find f <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>i :cs find i <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
-  noremap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
-endif
-
-" Set errorformat
-let OS = system("uname -s")
-if (OS =~ "OSF1")
-  call SetTru64Errorformat()
-endif
-
-augroup c
-  au!
-  au FileType     c,cpp    call LoadTypeC()
-augroup END
 
 "=================================== XML ===================================
 function! LoadTypeXML()
