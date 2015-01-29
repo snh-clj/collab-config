@@ -6,7 +6,7 @@
 (add-to-list 'load-path "~/.emacs.d/")
 (require 'pair)
 ;; Uncomment the below line if you don't like vim keybindings
-(setq evil-default-state 'emacs)
+;(setq evil-default-state 'emacs)
 (evil-mode 1)
 ;; Evil settings (post)
 (define-key evil-motion-state-map " " 'evil-scroll-down)

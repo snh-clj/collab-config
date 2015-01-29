@@ -1,3 +1,11 @@
+[user]
+
+    #name=Aaron Brooks
+    #email=aaron@brooks1.net
+
+    name=snh-clj collab
+    email=meetup@localhost
+
 [alias]
     # Common abbreviations
     ci = commit -v
