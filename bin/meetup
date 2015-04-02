@@ -1,4 +1,7 @@
 #!/bin/bash
 
+p=${1}
+export LEIN_FIGWHEEL_PORT=$((45670+p))
+export LEIN_FIGWHEEL_HOST=meetup.cljx.org
 cd ~/collab/meetup${1}
 tmux new -A -s meetup${1}
