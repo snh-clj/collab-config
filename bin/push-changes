@@ -1,0 +1,11 @@
+#!/bin/bash
+
+CURR_PROJ=$(readlink ~/repos/collab/meetup0/current-collab)
+
+for x in ~/repos/collab/meetup*; do
+  (cd $x
+   && git fetch
+   && git ci -a -m "Committing $(basename $x) $CURR_PROJ solutions."
+   && git rbu
+   && git push origin master);
+done
