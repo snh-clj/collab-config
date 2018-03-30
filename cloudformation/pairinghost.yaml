@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Defines resources for scale testing setup
+
+Parameters:
+
+  InstanceType:
+    Type: String
+    Default: m4.large
+
+  KeyName:
+    Type: String
+
+Mappings:
+  Regions:
+    us-west-2:
+      AMI: ami-78b82400 # Ubuntu 17.10
+    us-east-1:
+      AMI: ami-2043965d # Ubuntu 17.10
+
+Resources:
+
+  PairingVPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      Tags:
+        - {Key: Name, Value: !Sub '${AWS::StackName}-vpc'}
+
+  PairingIGW:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - {Key: Name, Value: !Sub '${AWS::StackName}-igw'}
+
+  PairingIGWAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+        VpcId: !Ref PairingVPC
+        InternetGatewayId: !Ref PairingIGW
+
+  PairingSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      CidrBlock: !GetAtt PairingVPC.CidrBlock
+      MapPublicIpOnLaunch: True
+      VpcId: !Ref PairingVPC
+      Tags:
+        - {Key: Name, Value: !Sub '${AWS::StackName}-subnet'}
+
+  PairingRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref PairingVPC
+      Tags:
+        - {Key: Name, Value: !Sub '${AWS::StackName}-rtb'}
+
+  PairingRouteTableAssoc:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PairingRouteTable
+      SubnetId: !Ref PairingSubnet
+
+  PairingIGWRoute:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref PairingRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref PairingIGW
+
+  PairingSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref PairingVPC
+      GroupName: !Sub "${AWS::StackName}-sg"
+      GroupDescription: !Sub "${AWS::StackName} Pairing Host Security Group"
+      SecurityGroupIngress:
+        - { CidrIp: '0.0.0.0/0', IpProtocol:  tcp, FromPort:   22, ToPort:    22 }
+      Tags:
+        - {Key: Name, Value: !Sub '${AWS::StackName}-sg'}
+
+  PairingHost:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !FindInMap [ Regions, !Ref 'AWS::Region', AMI ]
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PairingSubnet
+      SecurityGroupIds:
+        - !Ref PairingSecurityGroup
+      Tags:
+        - {Key: Name, Value: !Sub '${AWS::StackName}-host'}
+      UserData:
+        Fn::Base64: !Sub |
+            #!/bin/bash
+
+            set -x
+
+            apt-get update
+            apt-get -y upgrade
+            apt-get -y install git openjdk-8-jdk-headless emacs vim-nox mosh tmux
+            curl -o /usr/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+            chmod 755 /usr/bin/lein
+            sudo -i -u ubuntu mkdir repos
+            sudo -i -u ubuntu bash -c 'cd ~/repos; git clone https://github.com/snh-clj/collab-config'
+            sudo -i -u ubuntu bash -c 'ln -s ~/repos/collab-config/dotfiles/tmux.conf .tmux.conf'
+            sudo -i -u ubuntu bash -c 'ln -s ~/repos/collab-config/dotfiles/gitconfig .gitconfig'
+            # For now...
+            sudo -i -u ubuntu bash -c 'git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d'
+            # bashrc with TERM=xterm-256color
+
+Outputs:
+  HostIp:
+    Value: !GetAtt PairingHost.PublicIp
