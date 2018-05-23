@@ -75,7 +75,8 @@ Resources:
       GroupName: !Sub "${AWS::StackName}-sg"
       GroupDescription: !Sub "${AWS::StackName} Pairing Host Security Group"
       SecurityGroupIngress:
-        - { CidrIp: '0.0.0.0/0', IpProtocol:  tcp, FromPort:   22, ToPort:    22 }
+        - { CidrIp: '0.0.0.0/0', IpProtocol:  tcp, FromPort:    22, ToPort:    22 }
+        - { CidrIp: '0.0.0.0/0', IpProtocol:  udp, FromPort: 60000, ToPort: 61000 }
       Tags:
         - {Key: Name, Value: !Sub '${AWS::StackName}-sg'}
 
