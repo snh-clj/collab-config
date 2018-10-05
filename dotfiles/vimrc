@@ -1,0 +1,215 @@
+" Keep this at the top of the file
+set nocompatible
+
+" General Settings
+set autowrite           " write before a make
+set backspace=2         " allow backspacing over everything in insert mode
+set cscopetagorder=1    " check tags file before cscope
+set cscopetag           " search cscope on ctrl-] and :tag
+set hidden              " don't unload buffer when it is abandoned
+set history=100         " keep 100 lines of command line history
+set listchars=tab:»·,trail:·    " how to display some special chars
+set pastetoggle=<F10>
+set report=0            " threshold for reporting nr. of lines changed
+set ruler               " show the cursor position all the time
+set scrolloff=3         " keep three lines visible as cursor nears win edge
+set shortmess+=at       " list of flags, reduce length of messages
+set showcmd             " show (partial) command in status line
+set showmode            " message on status line to show current mode
+set showmatch           " briefly jump to matching bracket
+set nowarn              " don't warn for shell command when buffer changed
+set wildmode=longest,list,full
+
+" Statusline
+set laststatus=2        " always show a status line (with the current filename)
+set statusline=
+set statusline+=%-3.3n\                      " buffer number
+set statusline+=%f\                          " file name
+set statusline+=%h%m%r%w                     " flags
+set statusline+=\[%{strlen(&ft)?&ft:'none'}, " filetype
+set statusline+=%{&encoding},                " encoding
+set statusline+=%{&fileformat}]              " file format
+set statusline+=%=                           " right align
+set statusline+=0x%-8B\                      " current char
+set statusline+=%-14.(%l,%c%V%)\ %<%P        " offset
+
+" Tabs and Indents
+set autoindent
+set comments+=b:##      " add ## as a potential comment leader
+set expandtab
+" formatoptions are in the order presented in fo-table
+set formatoptions+=t    " auto-wrap using textwidth (not comments)
+set formatoptions+=c    " auto-wrap comments too
+set formatoptions+=r    " continue the comment header automatically on <CR>
+set formatoptions+=o    " insert the current comment leader with 'o' or 'O'
+set formatoptions+=q    " allow formatting of comments with gq
+set formatoptions-=w    " double-carriage-return indicates paragraph
+set formatoptions-=a    " don't reformat automatically
+set formatoptions+=n    " recognize numbered lists when autoindenting
+set formatoptions+=2    " use second line of paragraph when autoindenting
+set formatoptions-=v    " don't worry about vi compatiblity
+set formatoptions-=b    " don't worry about vi compatiblity
+set formatoptions+=l    " don't break long lines in insert mode
+set formatoptions+=1    " don't break lines after one-letter words, if possible
+set shiftround          " round indent < and > to multiple of shiftwidth
+set shiftwidth=4
+set smarttab            " use shiftwidth when inserting <TAB>
+set tabstop=4           " number of spaces that <Tab> in file uses
+set textwidth=80        " by default, although plugins or autocmds can modify
+
+" Search settings
+set incsearch           " show matches while still typing pattern
+set nohlsearch          " don't highlight matches after they're found
+set ignorecase          " "foo" matches "Foo", etc
+set smartcase           " ignorecase only when the pattern is all lower
+
+" Syntax and filetypes
+let g:bash_is_sh=1
+syntax on
+filetype on
+filetype plugin on
+filetype indent on
+
+" Windowing settings
+set equalalways         " keep windows equal when splitting (default)
+set eadirection=hor     " ver/hor/both - where does equalalways apply
+
+" Terminal settings
+set vb t_vb=            " shut off bell entirely; see also .gvimrc
+" Used to set this to avoid a problem in gnome-terminal where the
+" terminal would beep as vim started.  These days it appears that the
+" problem is solved in gnome-terminal.
+"set t_RV=              " don't check the terminal version
+if ($TERM == "xterm")
+  set t_Co=16         " set number of colors higher than gnome-term thinks
+endif
+set t_Co=256
+set background=light
+
+" Setup the ~/.vim directory
+if (!isdirectory($HOME."/.vim"))
+  call system("mkdir -p $HOME/.vim/bak $HOME/.vim/swap")
+endif
+if (isdirectory($HOME."/.vim/bak"))
+  set backup
+  set backupdir=~/.vim/bak,.
+  set backupext=''
+endif
+if (isdirectory($HOME."/.vim/swap"))
+  set directory=~/.vim/swap,.
+endif
+if (isdirectory($HOME."/.vim"))
+  set viminfo='50,n~/.vim/viminfo
+  let $CVIMSYN='~/.vim/'
+endif
+
+" Command line editing, emacs style (See ":help <>")
+cnoremap <C-A> <Home>
+cnoremap <C-F> <Right>
+cnoremap <C-B> <Left>
+cnoremap <ESC>b <S-Left>
+cnoremap <ESC>f <S-Right>
+cnoremap <ESC><C-H> <C-W>
+
+" Toggle list mode
+map ,l  :set nolist<CR>
+map ,L  :set list<CR>
+
+" Reformat current paragraph
+nmap Q }{gq}
+vmap Q gq 
+
+" Add support for html tidy
+map ,t  :%!tidy -q --indent auto --output-xhtml yes<CR>
+map ,T  :%!tidy -q --indent auto -xml<CR>
+map ,ct :%!tidy -q --clean --indent auto -xml<CR>
+
+" command line editing, emacs style (See ":help <>")
+cnoremap <C-A> <Home>
+cnoremap <C-F> <Right>
+cnoremap <C-B> <Left>
+cnoremap <ESC>b <S-Left>
+cnoremap <ESC>f <S-Right>
+cnoremap <ESC><C-H> <C-W>
+
+" Vimdiff mappings
+noremap ,dp :diffput<CR>
+noremap ,dg :diffget<CR>
+noremap ,du :diffupdate<CR>
+
+"=================================== XML ===================================
+function! LoadTypeXML()
+  set shiftwidth=2
+  " TODO: figure out how to use this: source ~/viml/closetag.vim
+  syntax cluster xmlRegionHook add=SpellErrors,SpellCorrected
+endfunction
+
+augroup xml
+  au!
+  au FileType     html,xml call LoadTypeXML()
+augroup END
+
+"================================= GENERAL =================================
+" Detect settings of file being edited and change ours to match
+function! DetectSettings()
+    " if any lines begin with <tab>, assume that's what we want to do
+    if search("^\t", 'w') > 0
+        setlocal noexpandtab
+    endif
+    1
+
+    " placeholder to respond to emacs-style file format tags
+    "--EMACS--
+endfunction
+
+augroup general
+  au!
+
+  " detect settings of file being edited and change ours to match
+  au BufReadPost  *      call DetectSettings()
+
+  " Load specific settings for various filetypes
+  au FileType     help     map <buffer> <space> /\|[^\|]\+\|<CR>
+
+  " Set filetypes for some files that vim doesn't recognize
+  au BufReadPost,BufNewFile .sawmillrc,.sawfishrc,*.jl setfiletype lisp
+  au BufReadPost,BufNewFile *.tmpl setfiletype html
+
+  " Read and write binary files
+  au BufReadPre   *.bin  let &bin=1
+  au BufReadPost  *.bin  if &bin | %!xxd
+  au BufReadPost  *.bin  set ft=xxd | endif
+  au BufWritePre  *.bin  if &bin | %!xxd -r
+  au BufWritePre  *.bin  endif
+  au BufWritePost *.bin  if &bin | %!xxd
+  au BufWritePost *.bin  set nomod | endif
+
+  " for crontab -e
+  au BufWritePre   */tmp/* set backupcopy=yes
+  au BufWritePost  */tmp/* set backupcopy=auto
+
+  " other programming settings
+  au BufReadPre */portage*\|*/gentoo* set ts=4 sw=4 noexpandtab
+  au FileType vim set sw=2 formatoptions-=tc
+  au FileType ruby set sw=2 formatoptions-=tc
+  au FileType perl,python set formatoptions-=tc
+augroup END
+
+if filereadable(expand("~/.vimrc.mine"))
+  source ~/.vimrc.mine
+endif
+
+if $COLORTERM == 'gnome-terminal'
+  set t_Co=256
+endif
+
+if $COLORTERM == 'xterm-color'
+  set t_Co=256
+endif
+
+let g:airline#extensions#tabline#enabled=1    
+let g:airline_theme='badwolf'
+
+nnoremap } :bn<CR>
+nnoremap { :bp<CR>
+nnoremap <bar> :bp\|bd #<CR>
